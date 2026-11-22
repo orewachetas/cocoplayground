@@ -2,7 +2,6 @@
   "name": "coco-playground",
   "version": "1.0.0",
   "description": "Coco Playground - A high-performance, futuristic Groq AI playground with dynamic speed telemetry, dual model arena, and customized styling.",
-  "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js"
