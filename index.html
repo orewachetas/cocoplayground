@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>⚡ Coco Playground - Next-Gen Groq AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22><path d=%22M12 2L2 7V17L12 22L22 17V7L12 2Z%22 stroke=%22%23F59E0B%22 stroke-width=%222%22/><path d=%22M12 6L16.5 12L12 18L7.5 12Z%22 fill=%22%2300F5D4%22/><circle cx=%2212%22 cy=%2212%22 r=%222%22 fill=%22%23ffffff%22/></svg>">
+</head>
+<body>
+
+  <!-- Top App Navigation Bar -->
+  <header class="app-header">
+    <div style="display: flex; align-items: center; gap: 1.25rem;">
+      <a href="#" class="brand-badge">
+        <div class="brand-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="#fde68a" stroke-width="1.8" stroke-linejoin="round"/>
+            <path d="M12 6L16.5 12L12 18L7.5 12L12 6Z" fill="#f59e0b"/>
+            <circle cx="12" cy="12" r="2.2" fill="#ffffff"/>
+          </svg>
+        </div>
+        <span style="background: linear-gradient(to right, #ffffff, #fde68a, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Coco Playground</span>
+      </a>
+      <div class="groq-speed-pill">
+        <span style="font-size: 0.8rem;">⚡</span>
+        <span>Groq LPU Powered</span>
+      </div>
+      <div id="activeModelBadge" style="font-size: 0.75rem; color: var(--coco-muted); font-family: var(--font-mono); background: var(--bg-surface-elevated); padding: 0.2rem 0.6rem; border-radius: 6px; border: 1px solid var(--coco-border);">
+        llama-3.3-70b-versatile
+      </div>
+    </div>
+
+    <!-- Center Mode Switcher -->
+    <div class="mode-toggle-group">
+      <button class="mode-btn active" data-mode="chat">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        <span>Chat Mode</span>
+      </button>
+      <button class="mode-btn" data-mode="arena">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="12 8 8 12 12 16 16 12 12 8"></polygon></svg>
+        <span>⚔️ Duel Arena</span>
+      </button>
+    </div>
+
+    <!-- Right Actions -->
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <!-- API Key Status Pill -->
+      <button id="apiKeyStatusPill" class="tool-icon-btn" onclick="CocoApp.openApiKeyModal()" style="border: 1px solid var(--coco-border); background: var(--bg-surface); padding: 0.35rem 0.8rem; border-radius: 9999px;">
+        <span id="apiKeyStatusDot" style="width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; display: inline-block;"></span>
+        <span id="apiKeyStatusText" style="font-family: var(--font-mono); font-size: 0.76rem;">Set Groq API Key</span>
+      </button>
+
+      <!-- View Code Button -->
+      <button class="tool-icon-btn" onclick="CocoApp.openCodeModal()" title="View runnable code">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+        <span>Code</span>
+      </button>
+
+      <!-- Sound Toggle Button -->
+      <button id="soundToggleBtn" class="tool-icon-btn" title="Toggle token stream audio feedback">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
+        <span>Sound</span>
+      </button>
+
+      <!-- Clear Chat -->
+      <button class="tool-icon-btn" onclick="CocoApp.clearChat()" title="Reset session">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <div class="main-container">
+    
+    <!-- Left Sidebar: Parameters & Controls -->
+    <aside class="params-sidebar" id="paramsSidebar">
+      
+      <!-- Model Selector Section -->
+      <div class="sidebar-section">
+        <div class="sidebar-heading">
+          <span>Inference Model</span>
+          <button onclick="CocoApp.refreshLiveModels()" title="Fetch latest models from Groq" style="background:transparent; border:none; color:var(--coco-amber); cursor:pointer; font-size:0.75rem;">
+            ↻ Refresh
+          </button>
+        </div>
+        <div class="coco-input-wrap">
+          <select id="modelSelect" class="coco-select">
+            <option value="llama-3.3-70b-versatile">Llama 3.3 70B Versatile (Flagship)</option>
+            <option value="llama-3.1-8b-instant">Llama 3.1 8B Instant (800+ tok/s)</option>
+            <option value="deepseek-r1-distill-llama-70b">DeepSeek R1 Distill 70B (Reasoning)</option>
+            <option value="llama3-70b-8192">Llama 3 70B</option>
+            <option value="llama3-8b-8192">Llama 3 8B</option>
+            <option value="mixtral-8x7b-32768">Mixtral 8x7B</option>
+            <option value="gemma2-9b-it">Gemma 2 9B</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- System Prompt Section -->
+      <div class="sidebar-section">
+        <div class="sidebar-heading">
+          <span>System Prompt</span>
+        </div>
+        <div class="coco-input-wrap">
+          <textarea id="systemPromptInput" class="coco-textarea" placeholder="Define model behavior, identity, and formatting instructions..."></textarea>
+        </div>
+        <!-- Preset Pills -->
+        <div style="display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.5rem;">
+          <button class="tool-icon-btn" onclick="CocoApp.applyPreset('coco')" style="font-size: 0.72rem; padding: 0.15rem 0.45rem;">⚡ Coco AI</button>
+          <button class="tool-icon-btn" onclick="CocoApp.applyPreset('dev')" style="font-size: 0.72rem; padding: 0.15rem 0.45rem;">💻 Senior Dev</button>
+          <button class="tool-icon-btn" onclick="CocoApp.applyPreset('thinker')" style="font-size: 0.72rem; padding: 0.15rem 0.45rem;">🧠 Reasoner</button>
+          <button class="tool-icon-btn" onclick="CocoApp.applyPreset('concise')" style="font-size: 0.72rem; padding: 0.15rem 0.45rem;">⚡ Concise</button>
+          <button class="tool-icon-btn" onclick="CocoApp.applyPreset('json')" style="font-size: 0.72rem; padding: 0.15rem 0.45rem;">📦 JSON</button>
+        </div>
+      </div>
+
+      <!-- Hyperparameters Section -->
+      <div class="sidebar-section">
+        <div class="sidebar-heading">
+          <span>Hyperparameters</span>
+        </div>
+
+        <!-- Temperature -->
+        <div class="coco-input-wrap">
+          <div class="slider-header">
+            <span class="coco-label">Temperature</span>
+            <span id="tempValBadge" class="slider-val-badge">0.70</span>
+          </div>
+          <input type="range" id="temperatureSlider" class="coco-slider" min="0" max="2" step="0.05" value="0.7">
+        </div>
+
+        <!-- Max Completion Tokens -->
+        <div class="coco-input-wrap">
+          <div class="slider-header">
+            <span class="coco-label">Max Tokens</span>
+            <span id="maxTokensValBadge" class="slider-val-badge">2048</span>
+          </div>
+          <input type="range" id="maxTokensSlider" class="coco-slider" min="64" max="8192" step="64" value="2048">
+        </div>
+
+        <!-- Top P -->
+        <div class="coco-input-wrap">
+          <div class="slider-header">
+            <span class="coco-label">Top P</span>
+            <span id="topPValBadge" class="slider-val-badge">1.00</span>
+          </div>
+          <input type="range" id="topPSlider" class="coco-slider" min="0" max="1" step="0.05" value="1.0">
+        </div>
+
+        <!-- Stream Toggle -->
+        <div class="toggle-row">
+          <span class="switch-label">Stream Tokens</span>
+          <label class="switch">
+            <input type="checkbox" id="streamToggle" checked>
+            <span class="slider-switch"></span>
+          </label>
+        </div>
+
+        <!-- JSON Mode Toggle -->
+        <div class="toggle-row">
+          <span class="switch-label">JSON Object Mode</span>
+          <label class="switch">
+            <input type="checkbox" id="jsonModeToggle">
+            <span class="slider-switch"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Quick Info / Help Box -->
+      <div class="sidebar-section" style="margin-top: auto; background: rgba(0,0,0,0.2);">
+        <div style="font-size: 0.75rem; color: var(--coco-muted); line-height: 1.45;">
+          🔒 <strong style="color: var(--coco-cream);">Client-Side Direct:</strong> Calls go straight to <code style="color: var(--coco-mint);">api.groq.com</code>. Your API key never touches any intermediary server.
+        </div>
+      </div>
+    </aside>
+
+    <!-- Canvas Area -->
+    <main class="canvas-area">
+      
+      <!-- Mode 1: Chat View -->
+      <div id="chatViewArea" style="display: flex; flex-direction: column; height: 100%; width: 100%;">
+        <div class="messages-scroll-area" id="chatScrollArea">
+          
+          <!-- Welcome Hero Screen -->
+          <div class="welcome-hero" id="welcomeHero">
+            <div class="hero-logo-orb">
+              <svg width="44" height="44" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="heroCoreGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#F59E0B" />
+                    <stop offset="100%" stop-color="#00F5D4" />
+                  </linearGradient>
+                </defs>
+                <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="url(#heroCoreGrad)" stroke-width="1.6" stroke-linejoin="round"/>
+                <path d="M12 6L16.5 12L12 18L7.5 12L12 6Z" fill="url(#heroCoreGrad)"/>
+                <circle cx="12" cy="12" r="2.5" fill="#ffffff"/>
+              </svg>
+            </div>
+            <h1 class="hero-title">Welcome to Coco Playground</h1>
+            <p class="hero-subtitle">
+              Experience the world's fastest LLM inference on Groq hardware. Chat, duel models in the arena, or experiment with system instructions in real-time.
+            </p>
+
+            <div class="hero-quick-prompts">
+              <div class="prompt-card" onclick="CocoApp.usePrompt('Write a lightning-fast Rust async HTTP server using Tokio and Axum that streams SSE events.')">
+                <div class="prompt-card-title">⚡ High-Speed Rust SSE Server</div>
+                <div class="prompt-card-desc">Write an async HTTP service streaming real-time events</div>
+              </div>
+              <div class="prompt-card" onclick="CocoApp.usePrompt('Compare the architectural tradeoffs between MoE (Mixture of Experts) and dense transformer models.')">
+                <div class="prompt-card-title">🧠 MoE vs Dense Models</div>
+                <div class="prompt-card-desc">In-depth technical comparison of transformer architectures</div>
+              </div>
+              <div class="prompt-card" onclick="CocoApp.usePrompt('Write an interactive three.js particle simulation with custom GLSL vertex and fragment shaders.')">
+                <div class="prompt-card-title">🎨 Three.js GLSL Shaders</div>
+                <div class="prompt-card-desc">WebGL particle system with custom GPU acceleration</div>
+              </div>
+              <div class="prompt-card" onclick="CocoApp.usePrompt('Solve this reasoning puzzle: Three gods A, B, and C are called True, False, and Random. True always speaks truly, False always speaks falsely, but whether Random speaks truly or falsely is completely random...')">
+                <div class="prompt-card-title">🧩 Hardest Logic Puzzle</div>
+                <div class="prompt-card-desc">Test deep reasoning and multi-step deduction</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Messages Container -->
+          <div id="messagesContainer"></div>
+        </div>
+
+        <!-- Input Bar -->
+        <div class="chat-input-container">
+          <div class="input-box-wrapper">
+            <textarea id="chatInput" class="chat-input-field" placeholder="Ask Coco anything... (Press Enter to send, Shift+Enter for newline)"></textarea>
+            
+            <div class="input-actions-bar">
+              <div class="input-tools-left">
+                <button class="tool-icon-btn" onclick="CocoApp.usePrompt('Format the answer in clean markdown with structured tables and bullet points.')">
+                  <span>Markdown</span>
+                </button>
+                <button class="tool-icon-btn" onclick="CocoApp.usePrompt('Explain your thought process step by step before arriving at the conclusion.')">
+                  <span>Reason Step-by-Step</span>
+                </button>
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <button id="sendBtn" class="send-action-btn">
+                  <span>Run</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                </button>
+                <button id="stopBtn" class="stop-action-btn" style="display: none;">
+                  <span>Stop</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"></rect></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mode 2: Duel Arena View (Side by Side) -->
+      <div id="arenaViewArea" class="arena-container">
+        <!-- Model A Column -->
+        <div class="arena-col">
+          <div class="arena-header">
+            <div class="arena-model-badge">
+              <span style="color: var(--coco-amber);">Model A:</span>
+              <select id="arenaModelASelect" class="coco-select" style="padding: 0.25rem 0.5rem; font-size: 0.78rem; width: auto;"></select>
+            </div>
+            <div id="statBadgeA" class="arena-stat-badge">⚡ Ready</div>
+          </div>
+          <div class="arena-messages-scroll" id="arenaScrollA"></div>
+        </div>
+
+        <!-- Model B Column -->
+        <div class="arena-col">
+          <div class="arena-header">
+            <div class="arena-model-badge">
+              <span style="color: var(--coco-mint);">Model B:</span>
+              <select id="arenaModelBSelect" class="coco-select" style="padding: 0.25rem 0.5rem; font-size: 0.78rem; width: auto;"></select>
+            </div>
+            <div id="statBadgeB" class="arena-stat-badge">⚡ Ready</div>
+          </div>
+          <div class="arena-messages-scroll" id="arenaScrollB"></div>
+        </div>
+      </div>
+
+      <!-- Telemetry Bottom Dock -->
+      <footer class="telemetry-dock">
+        <div class="speed-gauge-wrap">
+          <canvas id="speedGaugeCanvas" class="gauge-canvas" width="60" height="34"></canvas>
+          <div class="metric-details">
+            <span class="metric-label">Inference Speed</span>
+            <span id="telemetrySpeed" class="metric-val speed">0.0 Tok/s</span>
+          </div>
+        </div>
+
+        <div class="telemetry-metrics-row">
+          <div class="metric-item">
+            <div class="metric-icon-orb">⏱️</div>
+            <div class="metric-details">
+              <span class="metric-label">Time to First Token</span>
+              <span id="telemetryTtft" class="metric-val ttft">0 ms</span>
+            </div>
+          </div>
+
+          <div class="metric-item">
+            <div class="metric-icon-orb">⏳</div>
+            <div class="metric-details">
+              <span class="metric-label">Total Time</span>
+              <span id="telemetryLatency" class="metric-val">0.00 s</span>
+            </div>
+          </div>
+
+          <div class="metric-item">
+            <div class="metric-icon-orb">📊</div>
+            <div class="metric-details">
+              <span class="metric-label">Token Count</span>
+              <span id="telemetryTokens" class="metric-val">0 tokens</span>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <!-- API Key Setup Modal -->
+  <div class="modal-overlay" id="apiKeyModal">
+    <div class="coco-modal">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span>🔑</span>
+          <span>Groq API Key Setup</span>
+        </div>
+        <button class="modal-close-btn" onclick="CocoApp.closeApiKeyModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.88rem; color: var(--coco-muted); margin-bottom: 1.25rem; line-height: 1.5;">
+          Enter your Groq Cloud API key below to unlock blazing fast inference. Your key is stored securely in your browser's local storage and is sent directly to Groq.
+        </p>
+
+        <div class="coco-input-wrap">
+          <label class="coco-label">
+            <span>Groq API Key</span>
+            <a href="https://console.groq.com/keys" target="_blank" rel="noopener" style="color: var(--coco-amber); text-decoration: none; font-size: 0.75rem;">
+              Get free key on console.groq.com ↗
+            </a>
+          </label>
+          <input type="password" id="modalApiKeyInput" class="coco-input" placeholder="gsk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" style="font-family: var(--font-mono);">
+        </div>
+
+        <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); padding: 0.85rem 1rem; border-radius: 10px; margin-top: 1rem;">
+          <div style="font-size: 0.8rem; font-weight: 700; color: var(--coco-amber); margin-bottom: 0.25rem;">✨ Why Groq?</div>
+          <div style="font-size: 0.78rem; color: #cbd5e1; line-height: 1.45;">
+            Groq LPUs deliver up to 800+ tokens per second on open-weights models like Llama 3.1 & 3.3, making complex tasks instantaneous.
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="tool-icon-btn" onclick="CocoApp.closeApiKeyModal()">Cancel</button>
+        <button id="saveApiKeyBtn" class="send-action-btn" onclick="CocoApp.saveApiKeyFromModal()">
+          <span>Verify & Save Key</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Code Export Modal -->
+  <div class="modal-overlay" id="codeModal">
+    <div class="coco-modal" style="max-width: 680px;">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span>&lt;/&gt;</span>
+          <span>Export Code Snippet</span>
+        </div>
+        <button class="modal-close-btn" onclick="CocoApp.closeCodeModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- Language Tabs -->
+        <div style="display: flex; gap: 0.4rem; margin-bottom: 1rem; border-bottom: 1px solid var(--coco-border); padding-bottom: 0.5rem;">
+          <button class="code-tab-btn mode-btn active" data-lang="curl" onclick="CocoApp.renderCodeExportTab('curl')">cURL</button>
+          <button class="code-tab-btn mode-btn" data-lang="python" onclick="CocoApp.renderCodeExportTab('python')">Python</button>
+          <button class="code-tab-btn mode-btn" data-lang="node" onclick="CocoApp.renderCodeExportTab('node')">Node.js</button>
+          <button class="code-tab-btn mode-btn" data-lang="fetch" onclick="CocoApp.renderCodeExportTab('fetch')">Fetch API</button>
+        </div>
+
+        <div class="code-block-wrapper" style="margin: 0;">
+          <div class="code-block-header">
+            <span>Executable Snippet</span>
+            <button class="copy-code-btn" onclick="CocoApp.copyCurrentCode()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              Copy Code
+            </button>
+          </div>
+          <pre style="max-height: 340px; overflow-y: auto;"><code id="codeSnippetArea"></code></pre>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="send-action-btn" onclick="CocoApp.closeCodeModal()">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Scripts -->
+  <script src="js/groq-api.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
